@@ -11,7 +11,7 @@
 
 ## Hakkımda
 
-- 💻 **Kodjet Yazılım'ın kurucusu ve ortağıyım.** Firmamız **THK & Orion Tekmer** bünyesinde dijital ürünler geliştiriyor.
+- 💻 **Kodjet Yazılım'ın kurucu ortağıyım.** Firmamız **THK & Orion Tekmer** bünyesinde dijital ürünler geliştiriyor.
 - 🚀 Fikirleri çalışan, sade ve ölçeklenebilir ürünlere dönüştürmeyi seviyorum.
 - 📍 Ankara / Çankaya
 - 🌐 Projeler ve iletişim: [kodjet.com](https://kodjet.com)
