@@ -19,7 +19,9 @@
 ## Teknolojiler
 
 <div align="center">
-  <img src="https://skillicons.dev/icons?i=flutter,dart,js,react,nodejs,python,html,css,tailwind,git,github,docker,vscode&perline=7" alt="Teknoloji ikonları" />
+  <img src="https://skillicons.dev/icons?i=flutter,dart,js,react,nodejs,express,mysql,python,html,css,tailwind,git,github,docker,postman,figma,vscode&perline=9" alt="Teknoloji ikonları" />
+  <br />
+  <img src="https://img.shields.io/badge/REST_API-02569B?style=for-the-badge&logo=fastapi&logoColor=white" alt="REST API" />
 </div>
 
 ## Katkı Yolculuğu
