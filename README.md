@@ -42,3 +42,5 @@
 <div align="center">
   <sub>Üretmeye, öğrenmeye ve paylaşmaya devam.</sub>
 </div>
+
+<!-- profile-readme:v1 -->
