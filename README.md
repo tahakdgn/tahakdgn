@@ -19,14 +19,7 @@
 ## Teknolojiler
 
 <div align="center">
-  <img src="https://skillicons.dev/icons?i=js,ts,react,nextjs,nodejs,python,html,css,tailwind,git,github,docker,vscode&perline=7" alt="Teknoloji ikonları" />
-</div>
-
-## GitHub İstatistikleri
-
-<div align="center">
-  <img height="165" src="https://github-readme-stats.vercel.app/api?username=tahakdgn&show_icons=true&theme=transparent&hide_border=true&locale=tr&rank_icon=github" alt="Taha'nın GitHub istatistikleri" />
-  <img height="165" src="https://github-readme-stats.vercel.app/api/top-langs/?username=tahakdgn&layout=compact&theme=transparent&hide_border=true&locale=tr" alt="En çok kullanılan diller" />
+  <img src="https://skillicons.dev/icons?i=flutter,dart,js,react,nodejs,python,html,css,tailwind,git,github,docker,vscode&perline=7" alt="Teknoloji ikonları" />
 </div>
 
 ## Katkı Yolculuğu
