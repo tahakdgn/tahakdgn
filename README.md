@@ -2,7 +2,7 @@
 
 # Merhaba, ben Taha Akdoğan 👋
 
-### Yazılım geliştirici • Ürün odaklı problem çözücü
+### Girişimci • Yazılım Geliştirici • Ürün Odaklı Problem Çözücü
 
 [![Website](https://img.shields.io/badge/kodjet.com-111827?style=for-the-badge&logo=googlechrome&logoColor=white)](https://kodjet.com)
 [![GitHub](https://img.shields.io/badge/GitHub-tahakdgn-181717?style=for-the-badge&logo=github)](https://github.com/tahakdgn)
@@ -11,7 +11,7 @@
 
 ## Hakkımda
 
-- 💻 **Kodjet Yazılım** ve **Orion Tekmer** bünyesinde dijital ürünler geliştiriyorum.
+- 💻 **Kodjet Yazılım'ın kurucusu ve ortağıyım.** Firmamız **THK & Orion Tekmer** bünyesinde dijital ürünler geliştiriyor.
 - 🚀 Fikirleri çalışan, sade ve ölçeklenebilir ürünlere dönüştürmeyi seviyorum.
 - 📍 Ankara / Çankaya
 - 🌐 Projeler ve iletişim: [kodjet.com](https://kodjet.com)
