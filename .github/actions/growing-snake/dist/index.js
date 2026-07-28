@@ -106,8 +106,28 @@ var percent = (x) => parseFloat((x * 100).toFixed(2)).toString() + "%", mergeKey
 // ../svg-creator/snake.ts
 var lerp = (k, a, b) => (1 - k) * a + k * b, createSnake = (chain, eatenAt, { sizeCell, sizeDot }, duration) => {
   const initialLength = chain[0] ? getSnakeLength(chain[0]) : 0;
+  const maximumLength = 30;
   const headPositions = chain.map((snake) => snakeToCells(snake)[0]);
-  const snakeParts = Array.from({ length: initialLength + eatenAt.length }, (_, partIndex) => headPositions.map((_2, step) => headPositions[Math.max(0, step - partIndex)]));
+  const eatenSteps = new Set(eatenAt.map((t) => Math.round(t * chain.length)));
+  const frames = [];
+  let desiredLength = initialLength;
+  let body = snakeToCells(chain[0]).slice(0, initialLength);
+  for (let step = 0;step < headPositions.length; step++) {
+    const head = headPositions[step];
+    if (eatenSteps.has(step))
+      desiredLength = Math.min(maximumLength, desiredLength + 1);
+    const collisionIndex = body.findIndex(({ x, y }, index) => index > 0 && x === head.x && y === head.y);
+    if (collisionIndex >= 0)
+      body = body.slice(0, collisionIndex);
+    if (step > 0)
+      body.unshift(head);
+    body = body.slice(0, desiredLength);
+    frames.push(Array.from({ length: maximumLength }, (_, index) => ({
+      point: body[index] ?? body[body.length - 1] ?? head,
+      visible: index < body.length
+    })));
+  }
+  const snakeParts = Array.from({ length: maximumLength }, (_, partIndex) => frames.map((frame) => frame[partIndex]));
   const svgElements = snakeParts.map((_, i, { length }) => {
     const dMin = sizeDot * 0.8;
     const dMax = sizeCell * 0.9;
@@ -133,34 +153,29 @@ var lerp = (k, a, b) => (1 - k) * a + k * b, createSnake = (chain, eatenAt, { si
       fill: var(--cs);
       animation: none linear ${duration}ms infinite
     }`,
-    ...snakeParts.map((positions, i) => {
+    ...snakeParts.map((states, i) => {
       const id = `s${i}`;
       const animationName = id;
-      const bornAt = i < initialLength ? 0 : eatenAt[i - initialLength];
-      const keyframes = removeInterpolatedPositions(positions.map((tr, i2, { length }) => ({ ...tr, t: i2 / length }))).map(({ t, ...p }) => ({
+      const keyframes = states.map(({ point, visible }, frameIndex) => ({
+        ...point,
+        visible,
+        t: frameIndex / states.length
+      })).map(({ t, visible, ...p }) => ({
         t,
-        style: `${transform(p)};opacity:${t < bornAt ? 0 : 1}`
+        style: `${transform(p)};opacity:${visible ? 1 : 0}`
       }));
       return [
         createAnimation(animationName, keyframes),
         `.s.${id}{
-          ${transform(positions[0])};
-          opacity: ${bornAt === 0 ? 1 : 0};
+          ${transform(states[0].point)};
+          opacity: ${states[0].visible ? 1 : 0};
           animation-name: ${animationName}
         }`
       ];
     })
   ].flat();
   return { svgElements, styles };
-}, removeInterpolatedPositions = (arr) => arr.filter((u, i, arr2) => {
-  if (i - 1 < 0 || i + 1 >= arr2.length)
-    return true;
-  const a = arr2[i - 1];
-  const b = arr2[i + 1];
-  const ex = (a.x + b.x) / 2;
-  const ey = (a.y + b.y) / 2;
-  return !(Math.abs(ex - u.x) < 0.01 && Math.abs(ey - u.y) < 0.01);
-});
+};
 var init_snake = () => {};
 
 // ../svg-creator/grid.ts
