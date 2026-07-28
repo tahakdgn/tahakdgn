@@ -1,0 +1,18 @@
+name: Generate growing contribution snake
+description: Generates a contribution snake that grows after every eaten cell.
+
+inputs:
+  github_user_name:
+    description: GitHub username whose contributions will be rendered.
+    required: true
+  github_token:
+    description: Token used to fetch the contribution calendar.
+    required: false
+    default: ${{ github.token }}
+  outputs:
+    description: Newline-separated output files and rendering options.
+    required: true
+
+runs:
+  using: node24
+  main: dist/index.js

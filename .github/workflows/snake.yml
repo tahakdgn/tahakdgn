@@ -17,10 +17,14 @@ jobs:
     timeout-minutes: 5
 
     steps:
+      - name: Check out profile source
+        uses: actions/checkout@v4
+
       - name: Generate snake animation
-        uses: Platane/snk/svg-only@v3
+        uses: ./.github/actions/growing-snake
         with:
           github_user_name: ${{ github.repository_owner }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           outputs: |
             dist/github-contribution-grid-snake.svg
             dist/github-contribution-grid-snake-dark.svg?palette=github-dark
