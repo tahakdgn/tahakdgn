@@ -38,9 +38,9 @@
 ## Kodlama Aktivitem
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/tahakdgn/tahakdgn/output/github-contribution-grid-snake-dark.svg" />
-  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/tahakdgn/tahakdgn/output/github-contribution-grid-snake.svg" />
-  <img alt="GitHub katkı grafiğini dolaşan yılan animasyonu" src="https://raw.githubusercontent.com/tahakdgn/tahakdgn/output/github-contribution-grid-snake.svg" />
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/tahakdgn/tahakdgn/output/github-contribution-grid-snake-dark-v2.svg" />
+  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/tahakdgn/tahakdgn/output/github-contribution-grid-snake-v2.svg" />
+  <img alt="GitHub katkı grafiğini dolaşan yılan animasyonu" src="https://raw.githubusercontent.com/tahakdgn/tahakdgn/output/github-contribution-grid-snake-v2.svg" />
 </picture>
 
 <!-- profile-readme:v1 -->
