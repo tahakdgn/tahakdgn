@@ -1854,13 +1854,8 @@ var generateSnakeAnimation = async (source, outputs) => {
   }));
 };
 var getNonIntersectingRoute = (grid, initialSnake) => {
-  const reverseColumns = Math.random() < 0.5;
-  const columns = Array.from({ length: grid.width }, (_, x) => reverseColumns ? grid.width - 1 - x : x);
-  const rows = Array.from({ length: grid.height }, (_, y) => y);
-  const targets = columns.flatMap((x, columnIndex) => {
-    const columnRows = columnIndex % 2 === 0 ? rows : [...rows].reverse();
-    return columnRows.map((y) => ({ x, y }));
-  });
+  const clockwise = Math.random() < 0.5;
+  const targets = createSpiral(grid.width, grid.height, clockwise);
   const chain = [initialSnake];
   let snake = initialSnake;
   for (const target of targets) {
@@ -1872,6 +1867,47 @@ var getNonIntersectingRoute = (grid, initialSnake) => {
     }
   }
   return chain;
+};
+var createSpiral = (width, height, clockwise) => {
+  const points = [];
+  let left = 0;
+  let right = width - 1;
+  let top = 0;
+  let bottom = height - 1;
+  while (left <= right && top <= bottom) {
+    if (clockwise) {
+      for (let x = left;x <= right; x++)
+        points.push({ x, y: top });
+      top++;
+      for (let y = top;y <= bottom; y++)
+        points.push({ x: right, y });
+      right--;
+      if (top <= bottom)
+        for (let x = right;x >= left; x--)
+          points.push({ x, y: bottom });
+      bottom--;
+      if (left <= right)
+        for (let y = bottom;y >= top; y--)
+          points.push({ x: left, y });
+      left++;
+    } else {
+      for (let y = top;y <= bottom; y++)
+        points.push({ x: left, y });
+      left++;
+      for (let x = left;x <= right; x++)
+        points.push({ x, y: bottom });
+      bottom--;
+      if (left <= right)
+        for (let y = bottom;y >= top; y--)
+          points.push({ x: right, y });
+      right--;
+      if (top <= bottom)
+        for (let x = right;x >= left; x--)
+          points.push({ x, y: top });
+      top++;
+    }
+  }
+  return points;
 };
 
 // ../generate-snake-animation/outputsOptions.ts
