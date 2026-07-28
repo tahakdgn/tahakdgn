@@ -44,8 +44,28 @@ var __export = (target, all) => {
 };
 var __esm = (fn, res) => () => (fn && (res = fn(fn = 0)), res);
 
+// ../types/snake.ts
+var getHeadX = (snake) => snake[0] - 2, getHeadY = (snake) => snake[1] - 2, getSnakeLength = (snake) => snake.length / 2, nextSnake = (snake, dx, dy) => {
+  const copy = new Uint8Array(snake.length);
+  for (let i = 2;i < snake.length; i++)
+    copy[i] = snake[i - 2];
+  copy[0] = snake[0] + dx;
+  copy[1] = snake[1] + dy;
+  return copy;
+}, snakeToCells = (snake) => Array.from({ length: snake.length / 2 }, (_, i) => ({
+  x: snake[i * 2 + 0] - 2,
+  y: snake[i * 2 + 1] - 2
+})), createSnakeFromCells = (points) => {
+  const snake = new Uint8Array(points.length * 2);
+  for (let i = points.length;i--; ) {
+    snake[i * 2 + 0] = points[i].x + 2;
+    snake[i * 2 + 1] = points[i].y + 2;
+  }
+  return snake;
+};
+
 // ../types/grid.ts
-var isInside = (grid, x, y) => x >= 0 && y >= 0 && x < grid.width && y < grid.height, isInsideLarge = (grid, m, x, y) => x >= -m && y >= -m && x < grid.width + m && y < grid.height + m, copyGrid = ({ width, height, data }) => ({
+var isInside = (grid, x, y) => x >= 0 && y >= 0 && x < grid.width && y < grid.height, copyGrid = ({ width, height, data }) => ({
   width,
   height,
   data: Uint8Array.from(data)
@@ -58,38 +78,6 @@ var isInside = (grid, x, y) => x >= 0 && y >= 0 && x < grid.width && y < grid.he
   height,
   data: new Uint8Array(width * height)
 });
-
-// ../types/snake.ts
-var getHeadX = (snake) => snake[0] - 2, getHeadY = (snake) => snake[1] - 2, getSnakeLength = (snake) => snake.length / 2, snakeEquals = (a, b) => {
-  for (let i = 0;i < a.length; i++)
-    if (a[i] !== b[i])
-      return false;
-  return true;
-}, nextSnake = (snake, dx, dy) => {
-  const copy = new Uint8Array(snake.length);
-  for (let i = 2;i < snake.length; i++)
-    copy[i] = snake[i - 2];
-  copy[0] = snake[0] + dx;
-  copy[1] = snake[1] + dy;
-  return copy;
-}, snakeWillSelfCollide = (snake, dx, dy) => {
-  const nx = snake[0] + dx;
-  const ny = snake[1] + dy;
-  for (let i = 2;i < snake.length - 2; i += 2)
-    if (snake[i + 0] === nx && snake[i + 1] === ny)
-      return true;
-  return false;
-}, snakeToCells = (snake) => Array.from({ length: snake.length / 2 }, (_, i) => ({
-  x: snake[i * 2 + 0] - 2,
-  y: snake[i * 2 + 1] - 2
-})), createSnakeFromCells = (points) => {
-  const snake = new Uint8Array(points.length * 2);
-  for (let i = points.length;i--; ) {
-    snake[i * 2 + 0] = points[i].x + 2;
-    snake[i * 2 + 1] = points[i].y + 2;
-  }
-  return snake;
-};
 
 // ../svg-creator/xml-utils.ts
 var h = (element, attributes) => `<${element} ${toAttribute(attributes)}/>`, toAttribute = (o) => Object.entries(o).filter(([, value]) => value !== null).map(([name, value]) => `${name}="${value}"`).join(" ");
@@ -116,9 +104,6 @@ var lerp = (k, a, b) => (1 - k) * a + k * b, createSnake = (chain, eatenAt, { si
     const head = headPositions[step];
     if (eatenSteps.has(step))
       desiredLength = Math.min(maximumLength, desiredLength + 1);
-    const collisionIndex = body.findIndex(({ x, y }, index) => index > 0 && x === head.x && y === head.y);
-    if (collisionIndex >= 0)
-      body = body.slice(0, collisionIndex);
     if (step > 0)
       body.unshift(head);
     body = body.slice(0, desiredLength);
@@ -1651,398 +1636,6 @@ var getGitlabUserContribution = async (userName, o = {}) => {
   }
   return cells;
 };
-// ../types/point.ts
-var around4 = [
-  { x: 1, y: 0 },
-  { x: 0, y: -1 },
-  { x: -1, y: 0 },
-  { x: 0, y: 1 }
-];
-
-// ../solver/outside.ts
-var createOutside = (grid, color = 0) => {
-  const outside = createEmptyGrid(grid.width, grid.height);
-  for (let x = outside.width;x--; )
-    for (let y = outside.height;y--; )
-      setColor(outside, x, y, 1);
-  fillOutside(outside, grid, color);
-  return outside;
-};
-var fillOutside = (outside, grid, color = 0) => {
-  let changed = true;
-  while (changed) {
-    changed = false;
-    for (let x = outside.width;x--; )
-      for (let y = outside.height;y--; )
-        if (getColor(grid, x, y) <= color && !isOutside(outside, x, y) && around4.some((a) => isOutside(outside, x + a.x, y + a.y))) {
-          changed = true;
-          setColorEmpty(outside, x, y);
-        }
-  }
-  return outside;
-};
-var isOutside = (outside, x, y) => !isInside(outside, x, y) || isEmpty(getColor(outside, x, y));
-// ../solver/utils/sortPush.ts
-var sortPush = (arr, x, sortFn) => {
-  let a = 0;
-  let b = arr.length;
-  if (arr.length === 0 || sortFn(x, arr[a]) <= 0) {
-    arr.unshift(x);
-    return;
-  }
-  while (b - a > 1) {
-    const e2 = Math.ceil((a + b) / 2);
-    const s = sortFn(x, arr[e2]);
-    if (s === 0)
-      a = b = e2;
-    else if (s > 0)
-      a = e2;
-    else
-      b = e2;
-  }
-  const e = Math.ceil((a + b) / 2);
-  arr.splice(e, 0, x);
-};
-// ../solver/tunnel.ts
-var getTunnelPath = (snake0, tunnel) => {
-  const chain = [];
-  let snake = snake0;
-  for (let i = 1;i < tunnel.length; i++) {
-    const dx = tunnel[i].x - getHeadX(snake);
-    const dy = tunnel[i].y - getHeadY(snake);
-    snake = nextSnake(snake, dx, dy);
-    chain.unshift(snake);
-  }
-  return chain;
-};
-var isEmptySafe = (grid, x, y) => !isInside(grid, x, y) || isEmpty(getColor(grid, x, y));
-var trimTunnelStart = (grid, tunnel) => {
-  while (tunnel.length) {
-    const { x, y } = tunnel[0];
-    if (isEmptySafe(grid, x, y))
-      tunnel.shift();
-    else
-      break;
-  }
-};
-var trimTunnelEnd = (grid, tunnel) => {
-  while (tunnel.length) {
-    const i = tunnel.length - 1;
-    const { x, y } = tunnel[i];
-    if (isEmptySafe(grid, x, y) || tunnel.findIndex((p) => p.x === x && p.y === y) < i)
-      tunnel.pop();
-    else
-      break;
-  }
-};
-
-// ../solver/getBestTunnel.ts
-var getColorSafe = (grid, x, y) => isInside(grid, x, y) ? getColor(grid, x, y) : 0;
-var setEmptySafe = (grid, x, y) => {
-  if (isInside(grid, x, y))
-    setColorEmpty(grid, x, y);
-};
-var unwrap = (m) => !m ? [] : [...unwrap(m.parent), { x: getHeadX(m.snake), y: getHeadY(m.snake) }];
-var getSnakeEscapePath = (grid, outside, snake0, color) => {
-  const openList = [{ snake: snake0, w: 0 }];
-  const closeList = [];
-  while (openList[0]) {
-    const o = openList.shift();
-    const x = getHeadX(o.snake);
-    const y = getHeadY(o.snake);
-    if (isOutside(outside, x, y))
-      return unwrap(o);
-    for (const a of around4) {
-      const c = getColorSafe(grid, x + a.x, y + a.y);
-      if (c <= color && !snakeWillSelfCollide(o.snake, a.x, a.y)) {
-        const snake = nextSnake(o.snake, a.x, a.y);
-        if (!closeList.some((s0) => snakeEquals(s0, snake))) {
-          const w = o.w + 1 + +(c === color) * 1000;
-          sortPush(openList, { snake, w, parent: o }, (a2, b) => a2.w - b.w);
-          closeList.push(snake);
-        }
-      }
-    }
-  }
-  return null;
-};
-var getBestTunnel = (grid, outside, x, y, color, snakeN) => {
-  const c = { x, y };
-  const snake0 = createSnakeFromCells(Array.from({ length: snakeN }, () => c));
-  const one = getSnakeEscapePath(grid, outside, snake0, color);
-  if (!one)
-    return null;
-  const snakeICells = one.slice(0, snakeN);
-  while (snakeICells.length < snakeN)
-    snakeICells.push(snakeICells[snakeICells.length - 1]);
-  const snakeI = createSnakeFromCells(snakeICells);
-  const gridI = copyGrid(grid);
-  for (const { x: x2, y: y2 } of one)
-    setEmptySafe(gridI, x2, y2);
-  const two = getSnakeEscapePath(gridI, outside, snakeI, color);
-  if (!two)
-    return null;
-  one.shift();
-  one.reverse();
-  one.push(...two);
-  trimTunnelStart(grid, one);
-  trimTunnelEnd(grid, one);
-  return one;
-};
-// ../solver/getPathTo.ts
-var getPathTo = (grid, snake0, x, y) => {
-  const openList = [{ snake: snake0, w: 0 }];
-  const closeList = [];
-  while (openList.length) {
-    const c = openList.shift();
-    const cx = getHeadX(c.snake);
-    const cy = getHeadY(c.snake);
-    for (let i = 0;i < around4.length; i++) {
-      const { x: dx, y: dy } = around4[i];
-      const nx = cx + dx;
-      const ny = cy + dy;
-      if (nx === x && ny === y) {
-        const path = [nextSnake(c.snake, dx, dy)];
-        let e = c;
-        while (e.parent) {
-          path.push(e.snake);
-          e = e.parent;
-        }
-        return path;
-      }
-      if (isInsideLarge(grid, 2, nx, ny) && !snakeWillSelfCollide(c.snake, dx, dy) && (!isInside(grid, nx, ny) || isEmpty(getColor(grid, nx, ny)))) {
-        const nsnake = nextSnake(c.snake, dx, dy);
-        if (!closeList.some((s) => snakeEquals(nsnake, s))) {
-          const w = c.w + 1;
-          const h = Math.abs(nx - x) + Math.abs(ny - y);
-          const f = w + h;
-          const o = { snake: nsnake, parent: c, w, h, f };
-          sortPush(openList, o, (a, b) => a.f - b.f);
-          closeList.push(nsnake);
-        }
-      }
-    }
-  }
-};
-
-// ../solver/clearResidualColoredLayer.ts
-var clearResidualColoredLayer = (grid, outside, snake0, color) => {
-  const snakeN = getSnakeLength(snake0);
-  const tunnels = getTunnellablePoints(grid, outside, snakeN, color);
-  tunnels.sort((a, b) => b.priority - a.priority);
-  const chain = [snake0];
-  while (tunnels.length) {
-    let t = getNextTunnel(tunnels, chain[0]);
-    chain.unshift(...getPathTo(grid, chain[0], t[0].x, t[0].y));
-    chain.unshift(...getTunnelPath(chain[0], t));
-    for (const { x, y } of t)
-      setEmptySafe2(grid, x, y);
-    fillOutside(outside, grid);
-    for (let i = tunnels.length;i--; )
-      if (isEmpty(getColor(grid, tunnels[i].x, tunnels[i].y)))
-        tunnels.splice(i, 1);
-      else {
-        const t2 = tunnels[i];
-        const tunnel = getBestTunnel(grid, outside, t2.x, t2.y, color, snakeN);
-        if (!tunnel)
-          tunnels.splice(i, 1);
-        else {
-          t2.tunnel = tunnel;
-          t2.priority = getPriority(grid, color, tunnel);
-        }
-      }
-    tunnels.sort((a, b) => b.priority - a.priority);
-  }
-  chain.pop();
-  return chain;
-};
-var getNextTunnel = (ts, snake) => {
-  let minDistance = Infinity;
-  let closestTunnel = null;
-  const x = getHeadX(snake);
-  const y = getHeadY(snake);
-  const priority = ts[0].priority;
-  for (let i = 0;ts[i] && ts[i].priority === priority; i++) {
-    const t = ts[i].tunnel;
-    const d = distanceSq(t[0].x, t[0].y, x, y);
-    if (d < minDistance) {
-      minDistance = d;
-      closestTunnel = t;
-    }
-  }
-  return closestTunnel;
-};
-var getTunnellablePoints = (grid, outside, snakeN, color) => {
-  const points = [];
-  for (let x = grid.width;x--; )
-    for (let y = grid.height;y--; ) {
-      const c = getColor(grid, x, y);
-      if (!isEmpty(c) && c < color) {
-        const tunnel = getBestTunnel(grid, outside, x, y, color, snakeN);
-        if (tunnel) {
-          const priority = getPriority(grid, color, tunnel);
-          points.push({ x, y, priority, tunnel });
-        }
-      }
-    }
-  return points;
-};
-var getPriority = (grid, color, tunnel) => {
-  let nColor = 0;
-  let nLess = 0;
-  for (let i = 0;i < tunnel.length; i++) {
-    const { x, y } = tunnel[i];
-    const c = getColorSafe2(grid, x, y);
-    if (!isEmpty(c) && i === tunnel.findIndex((p) => p.x === x && p.y === y)) {
-      if (c === color)
-        nColor += 1;
-      else
-        nLess += color - c;
-    }
-  }
-  if (nColor === 0)
-    return 99999;
-  return nLess / nColor;
-};
-var distanceSq = (ax, ay, bx, by) => (ax - bx) ** 2 + (ay - by) ** 2;
-var getColorSafe2 = (grid, x, y) => isInside(grid, x, y) ? getColor(grid, x, y) : 0;
-var setEmptySafe2 = (grid, x, y) => {
-  if (isInside(grid, x, y))
-    setColorEmpty(grid, x, y);
-};
-// ../solver/clearCleanColoredLayer.ts
-var clearCleanColoredLayer = (grid, outside, snake0, color) => {
-  const snakeN = getSnakeLength(snake0);
-  const points = getTunnellablePoints2(grid, outside, snakeN, color);
-  const chain = [snake0];
-  while (points.length) {
-    const path = getPathToNextPoint(grid, chain[0], color, points);
-    path.pop();
-    for (const snake of path)
-      setEmptySafe3(grid, getHeadX(snake), getHeadY(snake));
-    chain.unshift(...path);
-  }
-  fillOutside(outside, grid);
-  chain.pop();
-  return chain;
-};
-var unwrap2 = (m) => !m ? [] : [m.snake, ...unwrap2(m.parent)];
-var getPathToNextPoint = (grid, snake0, color, points) => {
-  const closeList = [];
-  const openList = [{ snake: snake0 }];
-  while (openList.length) {
-    const o = openList.shift();
-    const x = getHeadX(o.snake);
-    const y = getHeadY(o.snake);
-    const i = points.findIndex((p) => p.x === x && p.y === y);
-    if (i >= 0) {
-      points.splice(i, 1);
-      return unwrap2(o);
-    }
-    for (const { x: dx, y: dy } of around4) {
-      if (isInsideLarge(grid, 2, x + dx, y + dy) && !snakeWillSelfCollide(o.snake, dx, dy) && getColorSafe3(grid, x + dx, y + dy) <= color) {
-        const snake = nextSnake(o.snake, dx, dy);
-        if (!closeList.some((s0) => snakeEquals(s0, snake))) {
-          closeList.push(snake);
-          openList.push({ snake, parent: o });
-        }
-      }
-    }
-  }
-};
-var getTunnellablePoints2 = (grid, outside, snakeN, color) => {
-  const points = [];
-  for (let x = grid.width;x--; )
-    for (let y = grid.height;y--; ) {
-      const c = getColor(grid, x, y);
-      if (!isEmpty(c) && c <= color && !points.some((p) => p.x === x && p.y === y)) {
-        const tunnel = getBestTunnel(grid, outside, x, y, color, snakeN);
-        if (tunnel) {
-          for (const p of tunnel)
-            if (!isEmptySafe2(grid, p.x, p.y))
-              points.push(p);
-        }
-      }
-    }
-  return points;
-};
-var getColorSafe3 = (grid, x, y) => isInside(grid, x, y) ? getColor(grid, x, y) : 0;
-var setEmptySafe3 = (grid, x, y) => {
-  if (isInside(grid, x, y))
-    setColorEmpty(grid, x, y);
-};
-var isEmptySafe2 = (grid, x, y) => !isInside(grid, x, y) && isEmpty(getColor(grid, x, y));
-
-// ../solver/getBestRoute.ts
-var getBestRoute = (grid0, snake0) => {
-  const grid = copyGrid(grid0);
-  const outside = createOutside(grid);
-  const chain = [snake0];
-  for (const color of extractColors(grid)) {
-    if (color > 1)
-      chain.unshift(...clearResidualColoredLayer(grid, outside, chain[0], color));
-    chain.unshift(...clearCleanColoredLayer(grid, outside, chain[0], color));
-  }
-  return chain.reverse();
-};
-var extractColors = (grid) => {
-  let maxColor = Math.max(...grid.data);
-  return Array.from({ length: maxColor }, (_, i) => i + 1);
-};
-// ../solver/getPathToPose.ts
-var isEmptySafe3 = (grid, x, y) => !isInside(grid, x, y) || isEmpty(getColor(grid, x, y));
-var getPathToPose = (snake0, target, grid) => {
-  if (snakeEquals(snake0, target))
-    return [];
-  const targetCells = snakeToCells(target).reverse();
-  const snakeN = getSnakeLength(snake0);
-  const box = {
-    min: {
-      x: Math.min(getHeadX(snake0), getHeadX(target)) - snakeN - 1,
-      y: Math.min(getHeadY(snake0), getHeadY(target)) - snakeN - 1
-    },
-    max: {
-      x: Math.max(getHeadX(snake0), getHeadX(target)) + snakeN + 1,
-      y: Math.max(getHeadY(snake0), getHeadY(target)) + snakeN + 1
-    }
-  };
-  const [t0, ...forbidden] = targetCells;
-  forbidden.slice(0, 3);
-  const openList = [{ snake: snake0, w: 0 }];
-  const closeList = [];
-  while (openList.length) {
-    const o = openList.shift();
-    const x = getHeadX(o.snake);
-    const y = getHeadY(o.snake);
-    if (x === t0.x && y === t0.y) {
-      const path = [];
-      let e = o;
-      while (e) {
-        path.push(e.snake);
-        e = e.parent;
-      }
-      path.unshift(...getTunnelPath(path[0], targetCells));
-      path.pop();
-      path.reverse();
-      return path;
-    }
-    for (let i = 0;i < around4.length; i++) {
-      const { x: dx, y: dy } = around4[i];
-      const nx = x + dx;
-      const ny = y + dy;
-      if (!snakeWillSelfCollide(o.snake, dx, dy) && (!grid || isEmptySafe3(grid, nx, ny)) && (grid ? isInsideLarge(grid, 2, nx, ny) : box.min.x <= nx && nx <= box.max.x && box.min.y <= ny && ny <= box.max.y) && !forbidden.some((p) => p.x === nx && p.y === ny)) {
-        const snake = nextSnake(o.snake, dx, dy);
-        if (!closeList.some((s) => snakeEquals(snake, s))) {
-          const w = o.w + 1;
-          const h = Math.abs(nx - x) + Math.abs(ny - y);
-          const f = w + h;
-          sortPush(openList, { f, w, snake, parent: o }, (a, b) => a.f - b.f);
-          closeList.push(snake);
-        }
-      }
-    }
-  }
-};
 
 // ../types/__fixtures__/snake.ts
 var create = (length) => createSnakeFromCells(Array.from({ length }, (_, i) => ({ x: i, y: -1 })));
@@ -2051,7 +1644,6 @@ var snake3 = create(3);
 var snake4 = create(4);
 var snake5 = create(5);
 var snake9 = create(9);
-
 // ../generate-snake-animation/cellsToGrid.ts
 var cellsToGrid = (cells) => {
   const width = Math.max(0, ...cells.map((c) => c.x)) + 1;
@@ -2158,8 +1750,7 @@ var generateSnakeAnimation = async (source, outputs) => {
   const grid = cellsToGrid(cells);
   const snake = snake4;
   console.log("\uD83D\uDCE1 computing best route");
-  const chain = getBestRoute(grid, snake);
-  chain.push(...getPathToPose(chain.slice(-1)[0], snake));
+  const chain = getNonIntersectingRoute(grid, snake);
   return Promise.all(outputs.map(async (out, i) => {
     if (!out)
       return;
@@ -2177,6 +1768,23 @@ var generateSnakeAnimation = async (source, outputs) => {
       }
     }
   }));
+};
+var getNonIntersectingRoute = (grid, initialSnake) => {
+  const targets = Array.from({ length: grid.height }, (_, y) => Array.from({ length: grid.width }, (_2, index) => ({
+    x: y % 2 === 0 ? index : grid.width - 1 - index,
+    y
+  }))).flat();
+  const chain = [initialSnake];
+  let snake = initialSnake;
+  for (const target of targets) {
+    while (getHeadX(snake) !== target.x || getHeadY(snake) !== target.y) {
+      const dx = getHeadX(snake) === target.x ? 0 : Math.sign(target.x - getHeadX(snake));
+      const dy = dx === 0 ? Math.sign(target.y - getHeadY(snake)) : 0;
+      snake = nextSnake(snake, dx, dy);
+      chain.push(snake);
+    }
+  }
+  return chain;
 };
 
 // ../generate-snake-animation/outputsOptions.ts
