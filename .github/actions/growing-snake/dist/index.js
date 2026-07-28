@@ -138,6 +138,30 @@ var lerp = (k, a, b) => (1 - k) * a + k * b, createSnake = (chain, eatenAt, { si
       fill: var(--cs);
       animation: none linear ${duration}ms infinite
     }`,
+    createAnimation("bite", [
+      {
+        t: 0,
+        style: `x:0.8px;y:0.8px;width:14.4px;height:14.4px`
+      },
+      ...eatenAt.flatMap((t) => [
+        {
+          t: Math.max(0, t - 0.003),
+          style: `x:0.8px;y:0.8px;width:14.4px;height:14.4px`
+        },
+        {
+          t,
+          style: `x:-1.2px;y:2.8px;width:18.4px;height:10.4px`
+        },
+        {
+          t: Math.min(1, t + 0.003),
+          style: `x:0.8px;y:0.8px;width:14.4px;height:14.4px`
+        }
+      ]),
+      {
+        t: 1,
+        style: `x:0.8px;y:0.8px;width:14.4px;height:14.4px`
+      }
+    ]),
     ...snakeParts.map((states, i) => {
       const id = `s${i}`;
       const animationName = id;
@@ -154,7 +178,7 @@ var lerp = (k, a, b) => (1 - k) * a + k * b, createSnake = (chain, eatenAt, { si
         `.s.${id}{
           ${transform(states[0].point)};
           opacity: ${states[0].visible ? 1 : 0};
-          animation-name: ${animationName}
+          animation-name: ${animationName}${i === 0 ? ",bite" : ""}
         }`
       ];
     })
@@ -184,11 +208,30 @@ var createGrid = (cells, { sizeDotBorderRadius, sizeDot, sizeCell }, duration) =
     if (t !== null && id) {
       const animationName = id;
       styles.push(createAnimation(animationName, [
-        { t: t - 0.0001, style: `fill:var(--c${color})` },
-        { t: t + 0.0001, style: `fill:var(--ce)` },
-        { t: 1, style: `fill:var(--ce)` }
+        {
+          t: t - 0.003,
+          style: `fill:var(--c${color});transform:scale(1);opacity:1`
+        },
+        {
+          t,
+          style: `fill:var(--c${color});transform:scale(1.35);opacity:1`
+        },
+        {
+          t: t + 0.003,
+          style: `fill:var(--ce);transform:scale(.25);opacity:.25`
+        },
+        {
+          t: t + 0.007,
+          style: `fill:var(--ce);transform:scale(1);opacity:1`
+        },
+        {
+          t: 1,
+          style: `fill:var(--ce);transform:scale(1);opacity:1`
+        }
       ]), `.c.${id}{
           fill: var(--c${color});
+          transform-box: fill-box;
+          transform-origin: center;
           animation-name: ${animationName}
         }`);
     }
@@ -1813,7 +1856,7 @@ var parseEntry = (entry) => {
   };
   const animationOptions = {
     frameByStep: 1,
-    stepDurationMs: 100
+    stepDurationMs: 160
   };
   {
     const palette = palettes[sp.get("palette")];
