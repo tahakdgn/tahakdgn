@@ -330,16 +330,19 @@ var getCellsFromGrid = ({ width, height }) => Array.from({ length: width }, (_, 
   return livingCells;
 }, createSvg = (grid, cells, chain, drawOptions, animationOptions) => {
   const width = (grid.width + 2) * drawOptions.sizeCell;
-  const height = (grid.height + 0.5) * drawOptions.sizeCell;
+  const topPadding = 15;
+  const height = grid.height * drawOptions.sizeCell + topPadding;
   const duration = animationOptions.stepDurationMs * chain.length;
   const livingCells = createLivingCells(grid, chain, cells);
+  const victoryAt = Math.max(...livingCells.map(({ t }) => t ?? 0)) + 0.006;
   const elements = [
     createGrid(livingCells, drawOptions, duration),
-    createSnake(chain, livingCells.filter(({ t }) => t !== null).map(({ t }) => t).sort((a, b) => a - b), drawOptions, duration)
+    createSnake(chain, livingCells.filter(({ t }) => t !== null).map(({ t }) => t).sort((a, b) => a - b), drawOptions, duration),
+    createVictory(grid.width * drawOptions.sizeCell, grid.height * drawOptions.sizeCell, duration, victoryAt)
   ];
   const viewBox = [
     -drawOptions.sizeCell,
-    -drawOptions.sizeCell / 2,
+    -topPadding,
     width,
     height
   ].join(" ");
@@ -362,7 +365,42 @@ var getCellsFromGrid = ({ width, height }) => Array.from({ length: width }, (_, 
     "</svg>"
   ].join("");
   return optimizeSvg(svg);
-}, optimizeCss = (css) => minifyCss(css), optimizeSvg = (svg) => svg, generateColorVar = (drawOptions) => `
+}, optimizeCss = (css) => minifyCss(css), optimizeSvg = (svg) => svg, createVictory = (width, height, duration, victoryAt) => {
+  const panelWidth = 220;
+  const panelHeight = 68;
+  const x = (width - panelWidth) / 2;
+  const y = (height - panelHeight) / 2;
+  return {
+    styles: [
+      `.victory{
+        opacity:0;
+        transform-box:fill-box;
+        transform-origin:center;
+        animation:victory ${duration}ms ease-out infinite
+      }`,
+      createAnimation("victory", [
+        { t: 0, style: `opacity:0;transform:scale(.75)` },
+        { t: victoryAt, style: `opacity:0;transform:scale(.75)` },
+        {
+          t: Math.min(0.975, victoryAt + 0.012),
+          style: `opacity:1;transform:scale(1.08)`
+        },
+        {
+          t: Math.min(0.98, victoryAt + 0.022),
+          style: `opacity:1;transform:scale(1)`
+        },
+        { t: 0.985, style: `opacity:1;transform:scale(1)` },
+        { t: 1, style: `opacity:0;transform:scale(.9)` }
+      ]),
+      `.victory-panel{fill:var(--ce);stroke:var(--cs);stroke-width:2}`,
+      `.victory-title{fill:var(--cs);font:700 24px ui-monospace,SFMono-Regular,Consolas,monospace;text-anchor:middle}`,
+      `.victory-subtitle{fill:var(--cs);font:700 11px ui-monospace,SFMono-Regular,Consolas,monospace;text-anchor:middle;opacity:.8}`
+    ],
+    svgElements: [
+      `<g class="victory">` + `<rect class="victory-panel" x="${x}" y="${y}" width="${panelWidth}" height="${panelHeight}" rx="10"/>` + `<text class="victory-title" x="${width / 2}" y="${y + 31}">YOU WIN!</text>` + `<text class="victory-subtitle" x="${width / 2}" y="${y + 50}">GG · PLAY AGAIN</text>` + `</g>`
+    ]
+  };
+}, generateColorVar = (drawOptions) => `
     :root {
     --cb: ${drawOptions.colorDotBorder};
     --cs: ${drawOptions.colorSnake};
@@ -1795,6 +1833,8 @@ var generateSnakeAnimation = async (source, outputs) => {
   const snake = snake4;
   console.log("\uD83D\uDCE1 computing best route");
   const chain = getNonIntersectingRoute(grid, snake);
+  const finalPose = chain[chain.length - 1];
+  chain.push(...Array.from({ length: 19 }, () => finalPose));
   return Promise.all(outputs.map(async (out, i) => {
     if (!out)
       return;
