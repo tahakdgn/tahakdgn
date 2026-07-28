@@ -214,11 +214,11 @@ var lerp = (k, a, b) => (1 - k) * a + k * b, createSnake = (chain, eatenAt, { si
     ...snakeParts.map((states, i) => {
       const id = `s${i}`;
       const animationName = id;
-      const keyframes = states.map(({ point, visible }, frameIndex) => ({
+      const keyframes = removeRedundantFrames(states.map(({ point, visible }, frameIndex) => ({
         ...point,
         visible,
         t: frameIndex / states.length
-      })).map(({ t, visible, ...p }) => ({
+      }))).map(({ t, visible, ...p }) => ({
         t,
         style: `${transform(p)};opacity:${visible ? 1 : 0}`
       }));
@@ -233,7 +233,15 @@ var lerp = (k, a, b) => (1 - k) * a + k * b, createSnake = (chain, eatenAt, { si
     })
   ].flat();
   return { svgElements, styles };
-};
+}, removeRedundantFrames = (frames) => frames.filter((frame, index) => {
+  if (index === 0 || index === frames.length - 1)
+    return true;
+  const previous = frames[index - 1];
+  const next = frames[index + 1];
+  if (previous.visible !== frame.visible || next.visible !== frame.visible)
+    return true;
+  return !(Math.abs((previous.x + next.x) / 2 - frame.x) < 0.01 && Math.abs((previous.y + next.y) / 2 - frame.y) < 0.01);
+});
 var init_snake = () => {};
 
 // ../svg-creator/grid.ts
