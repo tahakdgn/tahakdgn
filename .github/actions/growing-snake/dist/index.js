@@ -113,7 +113,7 @@ var lerp = (k, a, b) => (1 - k) * a + k * b, createSnake = (chain, eatenAt, { si
     })));
   }
   const snakeParts = Array.from({ length: maximumLength }, (_, partIndex) => frames.map((frame) => frame[partIndex]));
-  const svgElements = snakeParts.map((_, i, { length }) => {
+  const partGeometry = snakeParts.map((_, i, { length }) => {
     const dMin = sizeDot * 0.8;
     const dMax = sizeCell * 0.9;
     const iMax = Math.min(4, length);
@@ -121,16 +121,16 @@ var lerp = (k, a, b) => (1 - k) * a + k * b, createSnake = (chain, eatenAt, { si
     const s = lerp(u, dMin, dMax);
     const m = (sizeCell - s) / 2;
     const r = Math.min(4.5, 4 * s / sizeDot);
-    return h("rect", {
-      class: `s s${i}`,
+    return {
       x: m.toFixed(1),
       y: m.toFixed(1),
       width: s.toFixed(1),
       height: s.toFixed(1),
       rx: r.toFixed(1),
       ry: r.toFixed(1)
-    });
+    };
   });
+  const svgElements = partGeometry.map((geometry, i) => h("g", { class: `s s${i}` }).replace("/>", ">") + h("rect", { class: `w w${i}`, ...geometry }) + "</g>");
   const transform = ({ x, y }) => `transform:translate(${x * sizeCell}px,${y * sizeCell}px)`;
   const styles = [
     `.s{ 
@@ -162,6 +162,25 @@ var lerp = (k, a, b) => (1 - k) * a + k * b, createSnake = (chain, eatenAt, { si
         style: `x:0.8px;y:0.8px;width:14.4px;height:14.4px`
       }
     ]),
+    `.w{
+      fill: var(--cs);
+      transform-box: fill-box;
+      transform-origin: center;
+      animation: wiggle 900ms ease-in-out infinite alternate
+    }`,
+    createAnimation("wiggle", [
+      { t: 0, style: `transform:rotate(-7deg) scale(.94,1.06)` },
+      { t: 0.5, style: `transform:rotate(7deg) scale(1.06,.94)` },
+      { t: 1, style: `transform:rotate(-7deg) scale(.94,1.06)` }
+    ]),
+    ...partGeometry.map((_, i) => `.w.w${i}{animation-delay:-${i * 73 % 900}ms}`),
+    `.w.w0{
+      animation-name: wiggle,bite;
+      animation-duration: 900ms,${duration}ms;
+      animation-timing-function: ease-in-out,linear;
+      animation-iteration-count: infinite,infinite;
+      animation-direction: alternate,normal
+    }`,
     ...snakeParts.map((states, i) => {
       const id = `s${i}`;
       const animationName = id;
@@ -178,7 +197,7 @@ var lerp = (k, a, b) => (1 - k) * a + k * b, createSnake = (chain, eatenAt, { si
         `.s.${id}{
           ${transform(states[0].point)};
           opacity: ${states[0].visible ? 1 : 0};
-          animation-name: ${animationName}${i === 0 ? ",bite" : ""}
+          animation-name: ${animationName}
         }`
       ];
     })
@@ -1813,10 +1832,13 @@ var generateSnakeAnimation = async (source, outputs) => {
   }));
 };
 var getNonIntersectingRoute = (grid, initialSnake) => {
-  const targets = Array.from({ length: grid.height }, (_, y) => Array.from({ length: grid.width }, (_2, index) => ({
-    x: y % 2 === 0 ? index : grid.width - 1 - index,
-    y
-  }))).flat();
+  const reverseColumns = Math.random() < 0.5;
+  const columns = Array.from({ length: grid.width }, (_, x) => reverseColumns ? grid.width - 1 - x : x);
+  const rows = Array.from({ length: grid.height }, (_, y) => y);
+  const targets = columns.flatMap((x, columnIndex) => {
+    const columnRows = columnIndex % 2 === 0 ? rows : [...rows].reverse();
+    return columnRows.map((y) => ({ x, y }));
+  });
   const chain = [initialSnake];
   let snake = initialSnake;
   for (const target of targets) {
