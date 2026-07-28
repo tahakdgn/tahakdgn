@@ -43,10 +43,4 @@
   <img alt="GitHub katkı grafiğini dolaşan yılan animasyonu" src="https://raw.githubusercontent.com/tahakdgn/tahakdgn/output/github-contribution-grid-snake.svg" />
 </picture>
 
----
-
-<div align="center">
-  <sub>Üretmeye, öğrenmeye ve paylaşmaya devam.</sub>
-</div>
-
 <!-- profile-readme:v1 -->
