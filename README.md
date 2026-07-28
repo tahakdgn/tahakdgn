@@ -35,7 +35,7 @@
   <img src="https://skillicons.dev/icons?i=postman,git,github,docker,figma,linux,vscode" alt="Postman, Git, GitHub, Docker, Figma, Linux ve VS Code" />
 </div>
 
-## Katkı Yolculuğu
+## Kodlama Aktivitem
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/tahakdgn/tahakdgn/output/github-contribution-grid-snake-dark.svg" />
