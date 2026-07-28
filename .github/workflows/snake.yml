@@ -26,8 +26,8 @@ jobs:
           github_user_name: ${{ github.repository_owner }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
           outputs: |
-            dist/github-contribution-grid-snake-v3.svg
-            dist/github-contribution-grid-snake-dark-v3.svg?palette=github-dark
+            dist/github-contribution-grid-snake-v4.svg
+            dist/github-contribution-grid-snake-dark-v4.svg?palette=github-dark
 
       - name: Publish animation to output branch
         working-directory: dist

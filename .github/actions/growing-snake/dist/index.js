@@ -330,7 +330,7 @@ var getCellsFromGrid = ({ width, height }) => Array.from({ length: width }, (_, 
   return livingCells;
 }, createSvg = (grid, cells, chain, drawOptions, animationOptions) => {
   const width = (grid.width + 2) * drawOptions.sizeCell;
-  const height = (grid.height + 2) * drawOptions.sizeCell;
+  const height = (grid.height + 0.5) * drawOptions.sizeCell;
   const duration = animationOptions.stepDurationMs * chain.length;
   const livingCells = createLivingCells(grid, chain, cells);
   const elements = [
@@ -339,7 +339,7 @@ var getCellsFromGrid = ({ width, height }) => Array.from({ length: width }, (_, 
   ];
   const viewBox = [
     -drawOptions.sizeCell,
-    -drawOptions.sizeCell * 2,
+    -drawOptions.sizeCell / 2,
     width,
     height
   ].join(" ");
