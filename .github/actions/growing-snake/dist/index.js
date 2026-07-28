@@ -145,15 +145,15 @@ var lerp = (k, a, b) => (1 - k) * a + k * b, createSnake = (chain, eatenAt, { si
       },
       ...eatenAt.flatMap((t) => [
         {
-          t: Math.max(0, t - 0.003),
+          t: Math.max(0, t - 0.005),
           style: `x:0.8px;y:0.8px;width:14.4px;height:14.4px`
         },
         {
           t,
-          style: `x:-1.2px;y:2.8px;width:18.4px;height:10.4px`
+          style: `x:-3px;y:3.6px;width:22px;height:8.8px`
         },
         {
-          t: Math.min(1, t + 0.003),
+          t: Math.min(1, t + 0.005),
           style: `x:0.8px;y:0.8px;width:14.4px;height:14.4px`
         }
       ]),
@@ -173,14 +173,44 @@ var lerp = (k, a, b) => (1 - k) * a + k * b, createSnake = (chain, eatenAt, { si
       { t: 0.5, style: `transform:rotate(7deg) scale(1.06,.94)` },
       { t: 1, style: `transform:rotate(-7deg) scale(.94,1.06)` }
     ]),
-    ...partGeometry.map((_, i) => `.w.w${i}{animation-delay:-${i * 73 % 900}ms}`),
-    `.w.w0{
-      animation-name: wiggle,bite;
-      animation-duration: 900ms,${duration}ms;
-      animation-timing-function: ease-in-out,linear;
-      animation-iteration-count: infinite,infinite;
-      animation-direction: alternate,normal
-    }`,
+    ...partGeometry.flatMap((_, i) => {
+      const pulseName = `pulse${i}`;
+      const waveDelay = i * 0.00045;
+      const pulseFrames = [
+        { t: 0, style: `filter:brightness(1);opacity:1` },
+        ...eatenAt.flatMap((t) => [
+          {
+            t: Math.max(0, t + waveDelay - 0.003),
+            style: `filter:brightness(1);opacity:1`
+          },
+          {
+            t: Math.min(1, t + waveDelay),
+            style: `filter:brightness(2.2) drop-shadow(0 0 3px var(--cs));opacity:.72`
+          },
+          {
+            t: Math.min(1, t + waveDelay + 0.004),
+            style: `filter:brightness(1);opacity:1`
+          }
+        ]),
+        { t: 1, style: `filter:brightness(1);opacity:1` }
+      ];
+      const names = i === 0 ? `wiggle,${pulseName},bite` : `wiggle,${pulseName}`;
+      const durations = i === 0 ? `900ms,${duration}ms,${duration}ms` : `900ms,${duration}ms`;
+      const timings = i === 0 ? "ease-in-out,linear,linear" : "ease-in-out,linear";
+      const repeats = i === 0 ? "infinite,infinite,infinite" : "infinite,infinite";
+      const directions = i === 0 ? "alternate,normal,normal" : "alternate,normal";
+      return [
+        createAnimation(pulseName, pulseFrames),
+        `.w.w${i}{
+          animation-name:${names};
+          animation-duration:${durations};
+          animation-timing-function:${timings};
+          animation-iteration-count:${repeats};
+          animation-direction:${directions};
+          animation-delay:-${i * 73 % 900}ms,0ms${i === 0 ? ",0ms" : ""}
+        }`
+      ];
+    }),
     ...snakeParts.map((states, i) => {
       const id = `s${i}`;
       const animationName = id;
@@ -228,19 +258,19 @@ var createGrid = (cells, { sizeDotBorderRadius, sizeDot, sizeCell }, duration) =
       const animationName = id;
       styles.push(createAnimation(animationName, [
         {
-          t: t - 0.003,
+          t: t - 0.005,
           style: `fill:var(--c${color});transform:scale(1);opacity:1`
         },
         {
           t,
-          style: `fill:var(--c${color});transform:scale(1.35);opacity:1`
+          style: `fill:var(--c${color});transform:scale(1.75);opacity:1`
         },
         {
-          t: t + 0.003,
-          style: `fill:var(--ce);transform:scale(.25);opacity:.25`
+          t: t + 0.004,
+          style: `fill:var(--ce);transform:scale(.1);opacity:0`
         },
         {
-          t: t + 0.007,
+          t: t + 0.01,
           style: `fill:var(--ce);transform:scale(1);opacity:1`
         },
         {
@@ -265,60 +295,6 @@ var createGrid = (cells, { sizeDotBorderRadius, sizeDot, sizeCell }, duration) =
   return { svgElements, styles };
 };
 var init_grid = () => {};
-
-// ../svg-creator/stack.ts
-var createStack = (cells, { sizeDot }, width, y, duration) => {
-  const svgElements = [];
-  const styles = [
-    `.u{ 
-      transform-origin: 0 0;
-      transform: scale(0,1);
-      animation: none linear ${duration}ms infinite;
-    }`
-  ];
-  const stack = cells.slice().filter((a) => a.t !== null).sort((a, b) => a.t - b.t);
-  const blocks = [];
-  stack.forEach(({ color, t }) => {
-    const latest = blocks[blocks.length - 1];
-    if (latest?.color === color)
-      latest.ts.push(t);
-    else
-      blocks.push({ color, ts: [t] });
-  });
-  const m = width / stack.length;
-  let i = 0;
-  let nx = 0;
-  for (const { color, ts } of blocks) {
-    const id = "u" + (i++).toString(36);
-    const animationName = id;
-    const x = (nx * m).toFixed(1);
-    nx += ts.length;
-    svgElements.push(h("rect", {
-      class: `u ${id}`,
-      height: sizeDot,
-      width: (ts.length * m + 0.6).toFixed(1),
-      x,
-      y
-    }));
-    styles.push(createAnimation(animationName, [
-      ...ts.map((t, i2, { length }) => [
-        { scale: i2 / length, t: t - 0.0001 },
-        { scale: (i2 + 1) / length, t: t + 0.0001 }
-      ]).flat(),
-      { scale: 1, t: 1 }
-    ].map(({ scale, t }) => ({
-      t,
-      style: `transform:scale(${scale.toFixed(3)},1)`
-    }))), `.u.${id} {
-        fill: var(--c${color});
-        animation-name: ${animationName};
-        transform-origin: ${x}px 0
-      }
-      `);
-  }
-  return { svgElements, styles };
-};
-var init_stack = () => {};
 
 // ../svg-creator/index.ts
 var exports_svg_creator = {};
@@ -346,12 +322,11 @@ var getCellsFromGrid = ({ width, height }) => Array.from({ length: width }, (_, 
   return livingCells;
 }, createSvg = (grid, cells, chain, drawOptions, animationOptions) => {
   const width = (grid.width + 2) * drawOptions.sizeCell;
-  const height = (grid.height + 5) * drawOptions.sizeCell;
+  const height = (grid.height + 2) * drawOptions.sizeCell;
   const duration = animationOptions.stepDurationMs * chain.length;
   const livingCells = createLivingCells(grid, chain, cells);
   const elements = [
     createGrid(livingCells, drawOptions, duration),
-    createStack(livingCells, drawOptions, grid.width * drawOptions.sizeCell, (grid.height + 2) * drawOptions.sizeCell, duration),
     createSnake(chain, livingCells.filter(({ t }) => t !== null).map(({ t }) => t).sort((a, b) => a - b), drawOptions, duration)
   ];
   const viewBox = [
@@ -399,7 +374,6 @@ var getCellsFromGrid = ({ width, height }) => Array.from({ length: width }, (_, 
 var init_svg_creator = __esm(() => {
   init_snake();
   init_grid();
-  init_stack();
 });
 
 // ../draw/pathRoundedRect.ts
